@@ -3,9 +3,10 @@ pipeline {
   tools{
     maven "maven3.8.4"
   }
-  parameters {
-        password(name: 'MY_PASSWORD', description: 'Enter a password:')
+   environment {
+        DOCKER_CREDENTIALS = credentials('docker-sandbox')
     }
+
   stages{
        stage('1GetCode') {
             steps{
@@ -34,12 +35,25 @@ pipeline {
             }
         }
         
-       
+     stage('Docker Login') {
+            steps {
+                sh """
+                    # Retrieve Docker credentials from Jenkins credentials
+                    DOCKER_USERNAME=\$(echo "$DOCKER_CREDENTIALS" | awk -F: '{print \$1}')
+                    DOCKER_PASSWORD=\$(echo "$DOCKER_CREDENTIALS" | awk -F: '{print \$2}')
+
+                    # Log in to Docker Hub (or other registry)
+                    docker login -u "\$DOCKER_USERNAME" -p "\$DOCKER_PASSWORD"
+
+                    # Now you're authenticated and can run Docker commands
+                """
+            }
+        }
+    
     stage('predeployment'){
       steps{
         sh "echo creating docker image"
         // sh "docker login -u YOUR_USERNAME -p YOUR_PASSWORD"
-      sh  "docker login -u datapandassandbox -p password"
         sh "docker build -t datapandassandbox/m-web-app . "
         sh "docker push datapandassandbox/m-web-app"
       }
