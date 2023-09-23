@@ -1,0 +1,74 @@
+pipeline {
+  agent any 
+  tools{
+    maven "maven3.8.4"
+  }
+  parameters {
+        password(name: 'MY_PASSWORD', description: 'Enter a password:')
+    }
+  stages{
+       stage('1GetCode') {
+            steps{
+                sh "rm -rf *"
+              git branch: 'dev', url: 'https://github.com/benadaba/maven-web-application-jf'
+                }
+
+        }
+      
+       stage('2build') {
+            steps{
+              sh "mvn package"
+            }
+        }
+        
+     stage('3CodeQualityAnalysis') {
+            steps{
+              sh "mvn sonar:sonar"
+            }
+        }
+        
+        
+     stage('deploy') {
+            steps{
+              sh "mvn deploy"
+            }
+        }
+        
+       
+    stage('predeployment'){
+      steps{
+        sh "echo creating docker image"
+        // sh "docker login -u YOUR_USERNAME -p YOUR_PASSWORD"
+      sh  "docker login -u datapandassandbox -p password"
+        sh "docker build -t datapandassandbox/m-web-app . "
+        sh "docker push datapandassandbox/m-web-app"
+      }
+    }
+    
+     stage('UnDeploy'){
+      steps{
+        sh "echo UNDEPLOYING existing application"
+        sh "docker rm -f webapp"
+      }
+    }
+    stage('deployment'){
+      steps{
+        sh "echo application ready for deployment"
+        sh "docker run -d -p 8000:8080 --name webapp datapandassandbox/m-web-app"
+      }
+    }
+  stage('emailNotification'){
+    steps{
+      sh "echo deployment successful"
+    }
+  }
+
+
+    }
+    
+    post{
+        always{sh "echo always"}
+        success{sh "echo success"}
+        failure{sh "echo failure"}
+    }
+}
