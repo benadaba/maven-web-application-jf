@@ -1,0 +1,60 @@
+@Library('DataPandasLibrary') _
+pipeline {
+  agent any 
+  tools{
+    maven "maven386"
+  }
+  stages{
+       stage('1GetCode') {
+            steps{
+              git branch: 'main', credentialsId: 'GITHUB-CREDENTIALS', url: 'https://github.com/benadaba/maven-web-application-jf'
+                }
+
+        }
+      
+       stage('2build') {
+            steps{
+             // sh "mvn clean package"
+             common("Build")
+            }
+        }
+        /*
+     stage('3CodeQualityAnalysis') {
+            steps{
+              sh "mvn sonar:sonar"
+            }
+        }
+        */
+        
+     stage('deploy') {
+            steps{
+            //   sh "mvn deploy"
+            stages("Upload Into Nexus")
+            }
+        }
+        
+        stage('Go-No-Go') {
+            steps{
+              timeout(time: 20, unit: 'MINUTES') {
+                    input message: "Please review the application and give feedback for Go-No-Go"
+              }
+            }
+        }
+        
+        /*
+        stage('deployment') {
+            steps{
+              sh "echo we are deploying to tomcat now ...."
+             // deploy adapters: [tomcat9(credentialsId: 'TOMCAT-CREDENTIALS', path: '', url: 'http://18.170.222.203:8080')], contextPath: null, onFailure: false, war: 'target/*war'
+                deploy adapters: [tomcat9(credentialsId: 'TOMCAT-CREDENTIALS', path: '', url: 'http://18.170.222.203:8080/')], contextPath: null, onFailure: false, war: 'target/*war'
+            }
+        }
+        */
+    }
+    
+    post{
+        always{sh "echo always"}
+        success{sh "echo success"}
+        failure{sh "echo failure"}
+    }
+}
