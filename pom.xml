@@ -111,7 +111,7 @@
 	    <snapshotRepository>
 	      <id>nexus</id>
 	      <name>DataPandas Snapshot Nexus Repository  for Nationwide</name>
-	      <url>http://18.170.118.81:8081/repository/nationwide-snapshot/</url>
+	      <url>http://172.22.0.4:8081/repository/nationwide-snapshot/</url>
 	    </snapshotRepository>
 	    
 	</distributionManagement>
