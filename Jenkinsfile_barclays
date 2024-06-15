@@ -3,10 +3,10 @@ pipeline {
   tools{
     maven "maven386"
   }
- environment {
+   environment {
         NEXUS_URL = '172.22.0.4'
-        NEXUS_REPOSITORY = 'nationwide-release'
-        NEXUS_CREDENTIALS_ID = 'nexus-credentials'
+        NEXUS_REPOSITORY = 'nationwide-snapshot'
+        NEXUS_CREDENTIALS_ID = 'nexus'
     }
   stages{
        stage('1GetCode') {
@@ -21,17 +21,32 @@ pipeline {
               sh "mvn package"
             }
         }
-        /*
+        
      stage('3CodeQualityAnalysis') {
             steps{
               sh "mvn sonar:sonar"
             }
         }
-        */
         
-     stage('deploy') {
-            steps{
-              sh "mvn deploy"
+        
+      stage('Upload to Nexus') {
+            steps {
+                script {
+                    def pom = readMavenPom file: 'pom.xml'
+                    nexusArtifactUploader artifacts: [[
+                        artifactId: pom.artifactId,
+                        classifier: '',
+                        file: "target/${pom.artifactId}-${pom.version}.war",
+                        type: 'war'
+                    ]],
+                    credentialsId: env.NEXUS_CREDENTIALS_ID,
+                    groupId: pom.groupId,
+                    nexusUrl: env.NEXUS_URL,
+                    nexusVersion: 'nexus3',
+                    protocol: 'http',
+                    repository: env.NEXUS_REPOSITORY,
+                    version: pom.version
+                }
             }
         }
     }
@@ -42,4 +57,3 @@ pipeline {
         failure{sh "echo failure"}
     }
 }
-
