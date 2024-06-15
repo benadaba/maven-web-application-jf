@@ -112,7 +112,7 @@
 	</distributionManagement>
 	
 	<build>
-		<finalName>nationwide</finalName>
+			<!-- <finalName>nationwide</finalName> -->
 		
 		<plugins>
 			<plugin>
