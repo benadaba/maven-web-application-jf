@@ -61,6 +61,13 @@ node () {
  				bat "mvn test " 
 			} 
  		}		// Maven build step
+		withMaven(maven: 'maven386') { 
+ 			if(isUnix()) {
+ 				sh "mvn sonar:sonar " 
+			} else { 
+ 				bat "mvn sonar:sonar " 
+			} 
+ 		}
 	withMaven(maven: 'maven386') { 
  			if(isUnix()) {
  				sh "mvn clean package " 
